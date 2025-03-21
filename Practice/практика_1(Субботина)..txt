@@ -1,0 +1,271 @@
+4.
+
+db.doctors.distinct("department");
+
+5.
+
+db.procedures.find(
+    { department: "Функц.диагностика" },
+    { name: 1, price: 1, _id: 0 }
+);
+
+6.
+
+db.prescriptions.aggregate([
+    { $lookup: {
+        from: "doctors",
+        localField: "doctor_id",
+        foreignField: "_id",
+        as: "doctor"
+    } },
+    { $unwind: "$doctor" },
+    { $lookup: {
+        from: "procedures",
+        localField: "procedure_id",
+        foreignField: "_id",
+        as: "procedure"
+    } },
+    { $unwind: "$procedure" },
+    { $project: {
+        surname: "$doctor.surname",
+        name: "$procedure.name",
+        quantity: 1,
+        payment: 1,
+        _id: 0
+    } }
+]);
+
+7.
+
+db.prescriptions.aggregate([
+    { $match: {
+        date: { $nin: ["Понедельник", "Вторник", "Среда"] }
+    } },
+    { $lookup: {
+        from: "procedures",
+        localField: "procedure_id",
+        foreignField: "_id",
+        as: "procedure"
+    } },
+    { $unwind: "$procedure" },
+    { $match: {
+        "procedure.price": { $gt: 10000 }
+    } },
+    { $lookup: {
+        from: "patients",
+        localField: "patient_id",
+        foreignField: "_id",
+        as: "patient"
+    } },
+    { $unwind: "$patient" },
+    { $group: {
+        _id: "$patient.surname",
+        discount: { $first: "$patient.discount" }
+    } },
+    { $project: {
+        surname: "$_id",
+        discount: 1,
+        _id: 0
+    } }
+]);
+
+10.
+
+// Вставка
+db.prescriptions.insertMany([
+    { _id: 43084, date: "Суббота", patient_id: 1, doctor_id: 4, procedure_id: 4, quantity: 1, payment: 15000, tax: 1050 },
+    { _id: 43085, date: "Суббота", patient_id: 3, doctor_id: 4, procedure_id: 4, quantity: 1, payment: 15000, tax: 1050 }
+]);
+//
+
+db.prescriptions.aggregate([
+    { $lookup: {
+        from: "procedures",
+        localField: "procedure_id",
+        foreignField: "_id",
+        as: "procedure"
+    } },
+    { $unwind: "$procedure" },
+    { $match: {
+        "procedure.name": "УЗИ"
+    } },
+    { $lookup: {
+        from: "patients",
+        localField: "patient_id",
+        foreignField: "_id",
+        as: "patient"
+    } },
+    { $unwind: "$patient" },
+    { $match: {
+        "patient.discount": { $gt: 0 }
+    } },
+    { $group: {
+        _id: "$doctor_id",
+        count: { $sum: 1 }
+    } },
+    { $match: {
+        count: { $gt: 2 }
+    } },
+    { $lookup: {
+        from: "doctors",
+        localField: "_id",
+        foreignField: "_id",
+        as: "doctor"
+    } },
+    { $unwind: "$doctor" },
+    { $project: {
+        surname: "$doctor.surname",
+        _id: 0
+    } }
+]);
+
+11.
+
+db.patients.aggregate([
+    { $sort: {
+        discount: 1
+    } },
+    { $group: {
+        _id: "$discount",
+        surnames: { $push: "$surname" }
+    } },
+    { $limit: 1 },
+    { $unwind: "$surnames" },
+    { $project: {
+        surname: "$surnames",
+        _id: 0
+    } }
+]);
+
+12.
+
+db.patients.aggregate([
+    { $project: {
+        surname: 1,
+        _id: 0
+    } },
+    { $unionWith: {
+        coll: "doctors",
+        pipeline: [
+            { $project: {
+                surname: 1,
+                _id: 0
+            } }
+        ]
+    } },
+    { $group: {
+        _id: "$surname"
+    } },
+    { $project: {
+        surname: "$_id",
+        _id: 0
+    } }
+]);
+
+13.
+
+db.doctors.aggregate([
+    { $lookup: {
+        from: "procedures",
+        pipeline: [
+            { $match: { department: "Лаборатория" } },
+            { $group: { _id: null, procedureIds: { $push: "$_id" } } }
+        ],
+        as: "labProcedures"
+    } },
+    { $unwind: "$labProcedures" },
+    { $lookup: {
+        from: "prescriptions",
+        localField: "_id",
+        foreignField: "doctor_id",
+        as: "doctorPrescriptions"
+    } },
+    { $unwind: { path: "$doctorPrescriptions", preserveNullAndEmptyArrays: true } },
+    { $match: {
+        $or: [
+            { doctorPrescriptions: { $exists: false } },
+            { "doctorPrescriptions.payment": { $lt: 10000 } }
+        ]
+    } },
+    { $group: {
+        _id: "$_id",
+        surname: { $first: "$surname" },
+        labProcedures: { $first: "$labProcedures.procedureIds" },
+        procedureIds: { $addToSet: "$doctorPrescriptions.procedure_id" }
+    } },
+    { $match: {
+        $expr: {
+            $eq: [
+                { $size: "$labProcedures" },
+                { $size: { $setIntersection: ["$labProcedures", "$procedureIds"] } }
+            ]
+        }
+    } },
+    { $project: {
+        surname: 1,
+        _id: 0
+    } }
+]);
+
+14.
+
+db.prescriptions.aggregate([
+    { $lookup: {
+        from: "procedures",
+        pipeline: [
+            { $group: {
+                _id: null,
+                minQuantity: { $min: "$max_quantity" }
+            } }
+        ],
+        as: "minQuantityData"
+    } },
+    { $unwind: "$minQuantityData" },
+    { $lookup: {
+        from: "procedures",
+        localField: "procedure_id",
+        foreignField: "_id",
+        as: "procedure"
+    } },
+    { $unwind: "$procedure" },
+    { $match: {
+        $expr: { $eq: ["$procedure.max_quantity", "$minQuantityData.minQuantity"] }
+    } },
+    { $lookup: {
+        from: "doctors",
+        localField: "doctor_id",
+        foreignField: "_id",
+        as: "doctor"
+    } },
+    { $unwind: "$doctor" },
+    { $group: {
+        _id: "$doctor.surname"
+    } },
+    { $project: {
+        surname: "$_id",
+        _id: 0
+    } }
+]);
+
+15.
+
+db.prescriptions.aggregate([
+    { $lookup: {
+        from: "procedures",
+        localField: "procedure_id",
+        foreignField: "_id",
+        as: "procedure"
+    } },
+    { $unwind: "$procedure" },
+    { $group: {
+        _id: "$procedure.department",
+        totalPayment: { $sum: "$payment" }
+    } },
+    { $match: {
+        totalPayment: { $gt: 70000 }
+    } },
+    { $project: {
+        department: "$_id",
+        _id: 0
+    } }
+]);

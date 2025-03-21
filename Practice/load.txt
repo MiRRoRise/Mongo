@@ -1,0 +1,46 @@
+db.patients.insertMany([
+  { "_id": 1, "surname": "Мишин", "department": "Кардиология", "discount": 50 },
+  { "_id": 2, "surname": "Сивогривов", "department": "Офтальмология", "discount": 0 },
+  { "_id": 3, "surname": "Пивень", "department": "Неврология", "discount": 50 },
+  { "_id": 4, "surname": "Макеев", "department": "Кардиология", "discount": 0 },
+  { "_id": 5, "surname": "Синицын", "department": "Терапевтия", "discount": 50 }
+]);
+
+db.doctors.insertMany([
+  { "_id": 1, "surname": "Рыпина", "department": "Кардиология", "received_percentage": 7 },
+  { "_id": 2, "surname": "Лукин", "department": "Функц.диагностика", "received_percentage": 12 },
+  { "_id": 3, "surname": "Гусев", "department": "Неврология", "received_percentage": 8 },
+  { "_id": 4, "surname": "Шокурова", "department": "Приемный покой", "received_percentage": 7 },
+  { "_id": 5, "surname": "Храмова", "department": "Терапевтия", "received_percentage": 7 },
+  { "_id": 6, "surname": "Образумова", "department": "Терапевтия", "received_percentage": 7 }
+]);
+
+db.procedures.insertMany([
+  { "_id": 1, "name": "ЭКГ", "department": "Кардиология", "price": 10000, "max_quantity": 5000 },
+  { "_id": 2, "name": "Давление", "department": "Терапевтия", "price": 2000, "max_quantity": 5000 },
+  { "_id": 3, "name": "Анализ крови", "department": "Лаборатория", "price": 5000, "max_quantity": 200 },
+  { "_id": 4, "name": "УЗИ", "department": "Функц.диагностика", "price": 30000, "max_quantity": 120 },
+  { "_id": 5, "name": "Проверка зрения", "department": "Офтальмология", "price": 12000, "max_quantity": 5000 },
+  { "_id": 6, "name": "Фонограмма", "department": "Кардиология", "price": 11000, "max_quantity": 400 },
+  { "_id": 7, "name": "Душ Шарко", "department": "Неврология", "price": 24000, "max_quantity": 400 }
+]);
+
+db.prescriptions.insertMany([
+  { "_id": 43067, "date": "Понедельник", "patient_id": 3, "doctor_id": 1, "procedure_id": 2, "quantity": 4, "payment": 8000 },
+  { "_id": 43068, "date": "Понедельник", "patient_id": 4, "doctor_id": 6, "procedure_id": 7, "quantity": 2, "payment": 48000 },
+  { "_id": 43069, "date": "Понедельник", "patient_id": 5, "doctor_id": 6, "procedure_id": 2, "quantity": 1, "payment": 2000 },
+  { "_id": 43070, "date": "Понедельник", "patient_id": 5, "doctor_id": 1, "procedure_id": 5, "quantity": 1, "payment": 12000 },
+  { "_id": 43071, "date": "Вторник", "patient_id": 2, "doctor_id": 6, "procedure_id": 2, "quantity": 3, "payment": 6000 },
+  { "_id": 43072, "date": "Вторник", "patient_id": 4, "doctor_id": 1, "procedure_id": 6, "quantity": 2, "payment": 22000 },
+  { "_id": 43073, "date": "Вторник", "patient_id": 5, "doctor_id": 5, "procedure_id": 7, "quantity": 3, "payment": 72000 },
+  { "_id": 43074, "date": "Вторник", "patient_id": 5, "doctor_id": 2, "procedure_id": 1, "quantity": 3, "payment": 30000 },
+  { "_id": 43075, "date": "Среда", "patient_id": 3, "doctor_id": 2, "procedure_id": 2, "quantity": 2, "payment": 4000 },
+  { "_id": 43076, "date": "Среда", "patient_id": 5, "doctor_id": 4, "procedure_id": 4, "quantity": 1, "payment": 30000 },
+  { "_id": 43077, "date": "Четверг", "patient_id": 1, "doctor_id": 5, "procedure_id": 4, "quantity": 1, "payment": 30000 },
+  { "_id": 43078, "date": "Четверг", "patient_id": 2, "doctor_id": 2, "procedure_id": 6, "quantity": 2, "payment": 22000 },
+  { "_id": 43079, "date": "Четверг", "patient_id": 4, "doctor_id": 4, "procedure_id": 2, "quantity": 1, "payment": 2000 },
+  { "_id": 43080, "date": "Пятница", "patient_id": 1, "doctor_id": 1, "procedure_id": 2, "quantity": 3, "payment": 6000 },
+  { "_id": 43081, "date": "Суббота", "patient_id": 2, "doctor_id": 3, "procedure_id": 4, "quantity": 2, "payment": 60000 },
+  { "_id": 43082, "date": "Суббота", "patient_id": 4, "doctor_id": 5, "procedure_id": 7, "quantity": 2, "payment": 48000 },
+  { "_id": 43083, "date": "Суббота", "patient_id": 1, "doctor_id": 1, "procedure_id": 3, "quantity": 1, "payment": 5000 }
+]);
